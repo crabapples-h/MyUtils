@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rootElement>
+<DataInterface>
+	<interface address="Test" method="post" text="测试" >
+		<args name="姓名" type="text" value="name" default=""/>
+		<args name="密码" type="password" value="password" default=""/>
+		<args name="图片" type="file" value="imgArr" default=""/>
+	</interface>
+</DataInterface>

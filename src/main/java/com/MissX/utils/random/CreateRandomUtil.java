@@ -13,20 +13,20 @@ public class CreateRandomUtil {
 	private static final String [] chars = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
 	public static final String [] rand = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"};
 	/**
-	 * 根据时间生成14位数字和三位随机字母后缀
-	 * @param name 需要添加的前缀
-	 * @return 生成的ID格式:name+时间+3位随机字母
+	 * 根据时间生成14位数字和N位随机字母后缀，共50位
+	 * @param prefix 需要添加的前缀
+	 * @return 生成的ID格式:prefix+时间+N位随机字母，共50位
 	 */
-	public static String createIdByTime(String name) {
-		String random = "";
-		for (int i = 0; i < 3; i++) {
-			random += chars[new Random().nextInt(26)];
+	public static String createIdByTime(String prefix) {
+		prefix += "-" + new Date().getTime();
+		for (int i = 0; i < 50-prefix.length(); i++) {
+			prefix += chars[new Random().nextInt(26)];
 		}
-		name += "_" + new Date().getTime() + random;
-		return name;
+		return prefix;
 	}
 	/**
 	 * 根据时间生成X加14位数字和五位随机字母后缀
+	 * @param c 添加的字符
 	 * @return 生成的ID格式:X+时间+5位随机字母
 	 */
 	public static String createNumberByTime(char c){

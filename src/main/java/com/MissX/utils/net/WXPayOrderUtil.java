@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.KeyStore;
 import java.security.Security;
-import java.util.Map;
+import java.util.Date;
+import java.util.List;
+import java.util.TreeMap;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,8 +25,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 import com.MissX.utils.MapUtil;
+import com.MissX.utils.net.HttpUtil.RequestMethod;
+import com.MissX.utils.sign.SignUtil;
 
 
 /**
@@ -34,16 +42,88 @@ import com.MissX.utils.MapUtil;
  * Admin
  */
 public class WXPayOrderUtil {
+	
+	/**
+	 * 订单异常，下单异常时抛出此异常
+	 * 2019年1月19日 下午6:36:02
+	 * @author H
+	 * TODO
+	 * Admin
+	 */
+	public static class OrderException extends RuntimeException{
+		private static final long serialVersionUID = 1L;
+		public OrderException(String message) {
+			super(message);
+		}
+	}
+	
 	/**
 	 * 发送Post请求 请求支付
 	 * @param create_url 微信支付接口
 	 * @param param 微信支付参数
 	 * @return 下单结果
 	 */
-	public static String CreateWXOrder(String create_url,Map<String,String> params) {
+	public static String CreateWXOrder(String create_url,TreeMap<String,String> params) {
 		String param = MapUtil.MapToXMLString(params);
-		String result = HttpUtil.SendHttpRequest(create_url, param);
+		String result = HttpUtil.SendHttpRequest(create_url, param,RequestMethod.POST);
 		return result;
+	}
+	
+	/**
+	 * 微信支付二次签名
+	 * @param post
+	 * @param date
+	 * @return 
+	 * @return
+	 * @throws Exception 
+	 * @throws DocumentException
+	 */
+	public static TreeMap<String, String> twiceSign(String paramStr,String key) throws Exception{
+		try {
+			Long time = new Date().getTime();
+			Document document = DocumentHelper.parseText(paramStr);
+			@SuppressWarnings("unchecked")
+			List<Element> elements = document.getRootElement().elements();
+			TreeMap<String,String> WXPayMap = new TreeMap<String,String>();
+			String appId = "";
+			String nonceStr = "";
+			String prepay_id = "";
+			for (Element element : elements) {
+				if("return_code".equals(element.getName())) {
+					if((element.getText().indexOf("FAIL")!=-1)) {
+						for (Element err : elements) {
+							if("return_msg".equals(err.getName())) {
+								throw new OrderException(err.getText());
+							}
+						}
+					}
+				}
+				if("err_code_des".equals(element.getName())) {
+					throw new RuntimeException(element.getText());
+				}
+				if("appid".equals(element.getName())) {
+					appId = element.getText();
+				}
+				if("nonce_str".equals(element.getName())) {
+					nonceStr = element.getText();
+				}
+				if("prepay_id".equals(element.getName())) {
+					prepay_id = "prepay_id="+element.getText();
+				}
+			}
+			time = time/1000;
+			WXPayMap.put("appId", appId);
+			WXPayMap.put("nonceStr", nonceStr);
+			WXPayMap.put("package", prepay_id);
+			WXPayMap.put("signType", "MD5");
+			WXPayMap.put("timeStamp", time.toString());
+			String param = HttpUtil.readlyParams(WXPayMap);
+			
+			WXPayMap.put("sign", SignUtil.getMD5(param+"&key="+key));
+			return WXPayMap;
+		}catch(Exception e) {
+			throw e;
+		}
 	}
 	
 	/**

@@ -1,34 +1,37 @@
 package com.MissX.utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
+import com.MissX.utils.Enum.EXCEPTION;
+import com.MissX.utils.Enum.PRINT;
+
 public class MapUtil {
 	
 	/**
-	 * 将回调返回的字符串转换为Map(仅可在微信订单返回数据时使用)
+	 * 将回调返回的XML字符串转换为Map(仅可在微信订单返回数据时使用)
 	 * @param str 微信返回的XML格式字符串
 	 * @param checkErroe 是否需要检测错误信息
 	 * @return XML转换的map
 	 */
-	public static Map<String,String> XMLStringToMap(String str,boolean checkErroe) {
+	public static TreeMap<String,String> XMLStringToMap(String str,EXCEPTION exception,PRINT print) {
 		Document document;
 		try {
 			document = DocumentHelper.parseText(str);
 			@SuppressWarnings("unchecked")
 			List<Element> elements = document.getRootElement().elements();
-			Map<String,String> resultMap = new HashMap<String,String>();
+			TreeMap<String,String> resultMap = new TreeMap<String,String>();
 			for (Element element : elements) {
-				if(checkErroe) {
+				if(EXCEPTION.check(exception)) {
 					if("result_code".equals(element.getName())) {
 						if((element.getText().indexOf("FAIL")!=-1)) {
 							for (Element err : elements) {
@@ -42,7 +45,9 @@ public class MapUtil {
 						throw new RuntimeException(element.getText());
 					}
 				}
-				System.out.println(element.getName()+"："+element.getText());
+				if(PRINT.check(print)) {
+					System.out.println(element.getName()+"："+element.getText());
+				}
 				resultMap.put(element.getName(), element.getText());
 			}
 			return resultMap;
@@ -79,21 +84,33 @@ public class MapUtil {
 	 * 将实体类转换为map
 	 * @param model
 	 * @return
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
+	 * @throws ModelToMapFormatException 
 	 */
-	public static <T> Map<String, String> ModelToMap(T model) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Map<String,String> map = new HashMap<String,String>();
-			Method[] methods = model.getClass().getMethods();	//获取所有自定义的方法
-			for (Method method : methods) {	//遍历所有自定义方法
-				if(method.getName().startsWith("get")) {	//判断当前方法是否为get方法
-					Object result = method.invoke(model);	//执行当前get方法并获取返回值
-					if(null==result) 
-						result = " ";
-					map.put(method.getName().replace("get", ""), result.toString());
+	public static <T> Map<String, String> ModelToMap(T model) throws ModelToMapFormatException {
+		try {
+			Map<String,String> map = new HashMap<String,String>();
+				Method[] methods = model.getClass().getMethods();	//获取所有自定义的方法
+				for (Method method : methods) {	//遍历所有自定义方法
+					if(method.getName().startsWith("get")) {	//判断当前方法是否为get方法
+						Object result = method.invoke(model);	//执行当前get方法并获取返回值
+						if(null==result) 
+							continue;
+						map.put(method.getName().replace("get", ""), result.toString());
+					}
 				}
-			}
-		return map;
+			return map;
+		}catch(Exception e){
+			throw new ModelToMapFormatException();
+		}
+	}
+	/**
+	 * 实体类转换map异常
+	 * 2019年2月14日 下午2:25:47
+	 * @author H
+	 * TODO
+	 * Admin
+	 */
+	private static class ModelToMapFormatException extends Exception{
+		private static final long serialVersionUID = 1L;
 	}
 }

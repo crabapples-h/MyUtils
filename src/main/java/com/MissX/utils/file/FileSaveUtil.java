@@ -22,29 +22,26 @@ import net.coobird.thumbnailator.Thumbnails;
 @Component
 public class FileSaveUtil {
 	
-	public String ROOT;
-	public String NAME;
+	private String Path;
 	/**
 	 * 构造方法，初始化保存路径，若配置文件未定义则保存到D:\WebFile\Miss-X\
 	 * @param TestRoot
 	 */
-	public FileSaveUtil(String Root,String name) {
-		ROOT = Root;
-		NAME = name;
+	public FileSaveUtil(String path) {
+		Path = path;
 	}
 	public FileSaveUtil() {
-		ROOT = "D:\\WebFile\\";
-		NAME = "Miss-X";
+		Path = "D:\\WebFile\\Miss-X";
 	}
 	/**
 	 * 保存图片-不压缩.返回文件路径
 	 * @param mFile 传入的文件流
 	 * @return	返回文件的保存路径
-	 * @throws IOException
+	 * @throws IOException 文件IO异常
 	 */
 	public String SaveIMG(MultipartFile mFile) throws IOException {
 		Date date = new Date();
-		String path = ROOT + NAME +"/"+ new SimpleDateFormat("YYYY-MM-dd_").format(date);
+		String path = Path +"/"+ new SimpleDateFormat("YYYY-MM-dd_").format(date);
 		String fileName = new SimpleDateFormat("HH-mm-ss-").format(date);
 		File fold = new File(path);
 		try {
@@ -62,7 +59,7 @@ public class FileSaveUtil {
 			}
 			File file = new File(path+"/"+fileName);
 			writeFile(mFile, file);
-			path = file.getPath().replace(ROOT, "\\file\\");
+			path = file.getPath().replace(Path, "\\file\\");
 		}catch(IOException e) {
 			e.printStackTrace();
 			System.out.println("文件保存出错");
@@ -74,13 +71,13 @@ public class FileSaveUtil {
 	
 	/**
 	 * 保存图片-压缩至1/2.返回文件路径
-	 * @param mFile
-	 * @return
-	 * @throws IOException
+	 * @param mFile 需要保存的文件
+	 * @return 文件路径
+	 * @throws IOException 文件保存IO异常
 	 */
 	public String SaveIMG_5(MultipartFile mFile) throws IOException {
 		Date date = new Date();
-		String path = ROOT + NAME +"/"+ new SimpleDateFormat("YYYY-MM-dd_").format(date);
+		String path = Path +"/"+ new SimpleDateFormat("YYYY-MM-dd_").format(date);
 		String fileName = new SimpleDateFormat("HH-mm-ss-").format(date);
 		File fold = new File(path);
 		try {
@@ -98,7 +95,7 @@ public class FileSaveUtil {
 			}
 			File file = new File(path+"/"+fileName);
 			writeFile(mFile, file);
-			path = file.getPath().replace(ROOT, "\\file\\");
+			path = file.getPath().replace(Path, "\\file\\");
 			Thumbnails.of(file).scale(1f).outputQuality(0.5f).toFile(file);
 		}catch(IOException e) {
 			System.out.println("文件保存出错");
@@ -110,9 +107,9 @@ public class FileSaveUtil {
 	
 	/**
 	 * 写入文件
-	 * @param mFile
-	 * @param file
-	 * @throws IOException
+	 * @param mFile 传入的文件
+	 * @param file	需要保存到的文件
+	 * @throws IOException 文件IO异常
 	 */
 	private static void writeFile(MultipartFile mFile,File file) throws IOException {
 		InputStream is = mFile.getInputStream();
@@ -132,8 +129,8 @@ public class FileSaveUtil {
 	
 	/**
 	 * 根据地址获取名字
-	 * @param path
-	 * @return
+	 * @param path 文件地址
+	 * @return 文件名
 	 */
 	public static String getNameForPath(String path){
 		String fileName = "/file"+path.split("file")[1];

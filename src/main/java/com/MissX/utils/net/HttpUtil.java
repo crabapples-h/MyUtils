@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.MissX.utils.Enum.EXCEPTION;
+import com.MissX.utils.Enum.PRINT;
 import com.MissX.utils.check.EmptyCheckUtil;
 import com.MissX.utils.check.EmptyCheckUtil.CheckException;
 
@@ -26,6 +27,9 @@ import com.MissX.utils.check.EmptyCheckUtil.CheckException;
  * Admin
  */
 public class HttpUtil {
+	public enum RequestMethod {
+		POST,GET;
+	}
 	private static final Map<String,String> HEADER = new TreeMap<String,String>();
 	private static final int CONN_TIMEOUT = 30000;	//链接超时时间
 	private static final int READ_TIMEOUT = 30000;	//响应超时时间
@@ -37,25 +41,25 @@ public class HttpUtil {
 	}
 	
 	/**
-	 * 发送Http请求
+	 * 发送Http请求(默认请求头)
 	 * @param url 发送Http请求
 	 * @param param 请求参数
 	 * @return 返回响应结果
 	 */
-	public static String SendHttpRequest(String url,String param) {
-		String result = sendRequest(url, param, null);
+	public static String SendHttpRequest(String url,String param,RequestMethod method) {
+		String result = sendRequest(url, param, null,method);
 		return result;
 	}
 	
 	/**
-	 * 发送Http请求
+	 * 发送Http请求(自定义请求头)
 	 * @param url 发送Http请求
 	 * @param param 请求参数
 	 * @param header 请求头(若不设置则使用默认请求头)
 	 * @return 返回响应结果
 	 */
-	public static String SendHttpRequest(String url,String param,Map<String,String> header) {
-		String result = sendRequest(url, param, header);
+	public static String SendHttpRequest(String url,String param,Map<String,String> header,RequestMethod method) {
+		String result = sendRequest(url, param, header, method);
 		return result;
 	}
 	
@@ -87,13 +91,17 @@ public class HttpUtil {
 	 * @param header 请求头
 	 * @return 响应消息
 	 */
-	private static String sendRequest(String link,String params,Map<String,String> header) {
+	private static String sendRequest(String link,String params,Map<String,String> header,RequestMethod method) {
 		PrintWriter print = null;
 		BufferedReader reader = null;
 		try {
 			URL url = new URL(link);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setRequestMethod("GET");
+			if(method==RequestMethod.POST) {
+				conn.setRequestMethod("POST");
+			}else {
+				conn.setRequestMethod("GET");
+			}
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			setRequest(conn,header);
@@ -116,8 +124,6 @@ public class HttpUtil {
 			}
 			in.close();
 			return result;
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -129,11 +135,11 @@ public class HttpUtil {
 	 * @param params 需要发送的参数
 	 * @return	转换之后的字符串
 	 */
-	public static String readlyParams(Map<String,String> params) {
+	public static String readlyParams(TreeMap<String,String> params) {
 		try {
 			if(null != params) {
 				Map<String,Object> map = new HashMap<String,Object>(params);
-				if(EmptyCheckUtil.EmptyCheckMapByParamsIsArray(map, false, false)) {
+				if(EmptyCheckUtil.EmptyCheckMapByParamsIsAll(map, EXCEPTION.UN_EXCEPTION, PRINT.UN_PRINT)) {
 					String data = "";
 					Set<Entry<String, String>> entrys = params.entrySet();
 					for (Entry<String, String> entry : entrys) {

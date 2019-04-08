@@ -10,7 +10,7 @@ package com.MissX.utils.check;
 public class CheckPhoneUtil {
 	/**
 	 * 验证手机号是否被使用
-	 * @return 
+	 * @param number 手机号
 	 */
 	public void CheckPhoneUse(String number){
 		

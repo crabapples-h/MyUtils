@@ -7,6 +7,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.MissX.utils.net.HttpUtil.RequestMethod;
+import com.MissX.utils.sign.SignUtil;
+
 public class SMSUtil {
     private String url;
     private String username;
@@ -22,14 +25,14 @@ public class SMSUtil {
         return result;
     }
     
-    public String sendCodeYouXin(String phone,Integer mobile_code) {
+    public String sendCodeYouXin(String phone,String text) {
     	Map<String,String> params = new HashMap<String,String>();//请求参数
     	String time = new SimpleDateFormat("MMddHHmmss").format(new Date());
         params.put("UserName",username);
         params.put("Timestemp",time);
         String sign = SignUtil.getMD5(username+password+time);
         params.put("Key",sign);
-        params.put("Content","【重庆爱乐屋】您的验证码是："+mobile_code+"。该验证码仅用于身份验证，请勿泄露给他人使用 ");
+        params.put("Content","text ");
         params.put("CharSet","utf-8");
         params.put("Mobiles",phone);
         params.put("Priority","1");
@@ -38,14 +41,14 @@ public class SMSUtil {
         return json;
   }
     
-    public String sendMeassageYouXin(String phone) {
+    public String sendMeassageYouXin(String phone,String text) {
     	Map<String,String> params = new HashMap<String,String>();//请求参数
     	String time = new SimpleDateFormat("MMddHHmmss").format(new Date());
     	params.put("UserName",username);
     	params.put("Timestemp",time);
     	String sign = SignUtil.getMD5(username+password+time);
     	params.put("Key",sign);
-    	params.put("Content","【重庆爱乐屋】 报名成功通知  ，您报名的信息已成功提交 。活动前一天有品牌专人联系提醒您前往参与 ！关注 “ 重庆爱乐屋 ” 获取更多专属服务 。 ");
+    	params.put("Content",text);
     	params.put("CharSet","utf-8");
     	params.put("Mobiles",phone);
     	params.put("Priority","1");
@@ -63,7 +66,7 @@ public class SMSUtil {
      * @throws Exception
      */
     private static String net(String strUrl, Map<String,String> params) {
-    	String result = HttpUtil.SendHttpRequest(strUrl, urlencode(params));
+    	String result = HttpUtil.SendHttpRequest(strUrl, urlencode(params),RequestMethod.POST);
         return result;
     }
  

@@ -30,9 +30,18 @@ import com.MissX.utils.random.CreateRandomUtil;
  */
 public class HttpUtil2 {
 	private static final Map<String,String> HEADER = new TreeMap<String,String>();
-	private static final int CONN_TIMEOUT = 30000;	//链接超时时间
-	private static final int READ_TIMEOUT = 30000;	//响应超时时间
-	private static final String USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; zh-CN; rv:1.9.2.6)";	//请求头
+	/**
+	 * 链接超时时间
+	 */
+	private static final int CONN_TIMEOUT = 30000;
+	/**
+	 * 响应超时时间
+	 */
+	private static final int READ_TIMEOUT = 30000;
+	/**
+	 * 请求头
+	 */
+	private static final String USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; zh-CN; rv:1.9.2.6)";
 	private static final String boundary = CreateRandomUtil.getRandom(15);
 	static {
 		HEADER.put("Accept", "*/*");
@@ -43,8 +52,10 @@ public class HttpUtil2 {
 	
 	/**
 	 * 发送Http请求(默认请求头)
-	 * @param url 发送Http请求
-	 * @param param 请求参数
+	 * @param url 请求地址
+	 * @param method 请求方式
+	 * @param print 是否打印参数
+	 * @param paramsMap 参数列表
 	 * @return 返回响应结果
 	 */
 	public static String SendHttpRequest(String url,RequestMethod method,PRINT print,HashMap<String, ?> ... paramsMap) {
@@ -54,9 +65,11 @@ public class HttpUtil2 {
 	
 	/**
 	 * 发送Http请求(自定义请求头)
-	 * @param url 发送Http请求
-	 * @param param 请求参数
+	 * @param url 请求地址
 	 * @param header 请求头(若不设置则使用默认请求头)
+	 * @param method 请求方式
+	 * @param print 是否打印参数
+	 * @param paramsMap 参数列表
 	 * @return 返回响应结果
 	 */
 	public static String SendHttpRequest(String url,Map<String,String> header,RequestMethod method, PRINT print,HashMap<String, ?> ... paramsMap) {
@@ -65,11 +78,14 @@ public class HttpUtil2 {
 	}
 	
 	/**
-	 * 发送http请求
-	 * @param link 链接地址
-	 * @param params 参数
-	 * @param header 请求头
-	 * @return 响应消息
+	 *
+	 * 发送Http请求
+	 * @param link 请求地址
+	 * @param header 请求头(若不设置则使用默认请求头)
+	 * @param method 请求方式
+	 * @param print 是否打印参数
+	 * @param paramsMap 参数列表
+	 * @return 返回响应结果
 	 */
 	private static String sendRequest(String link,Map<String,String> header,RequestMethod method,PRINT print,HashMap<String, ?> ... paramsMap) {
 		OutputStream out = null;
@@ -138,9 +154,9 @@ public class HttpUtil2 {
 	
 	/**
 	 * 发送字符串
-	 * @param key
-	 * @param value
-	 * @param out
+	 * @param key 参数名字
+	 * @param value 参数值
+	 * @param out 输出流
 	 * @throws IOException
 	 */
 	private static void sendStr(String key, String value, OutputStream out) throws IOException {
@@ -154,9 +170,9 @@ public class HttpUtil2 {
 	
 	/**
 	 * 发送文件
-	 * @param key
-	 * @param file
-	 * @param out
+	 * @param key 参数名
+	 * @param file 需要发送的文件
+	 * @param out 输出流
 	 */
 	private static void sendFile(String key, File file,OutputStream out){
 		StringBuffer sb = new StringBuffer();
@@ -183,7 +199,8 @@ public class HttpUtil2 {
 
 	/**
 	 * 设置请求头
-	 * @param conn传入需要设置请求头的HttpURLConnection
+	 * @param conn 传入需要设置请求头的HttpURLConnection
+	 * @param header 请求头
 	 * @return 返回设置完毕之后的HttpURLConnection
 	 */
 	private static HttpURLConnection setRequest(HttpURLConnection conn,Map<String,String> header) {
